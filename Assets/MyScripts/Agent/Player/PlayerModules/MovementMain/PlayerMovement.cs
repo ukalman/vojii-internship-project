@@ -1,0 +1,573 @@
+﻿
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+
+public enum MovementState
+{
+    Forward,
+    Backward,
+    Rightward,
+    Leftward,
+    Jump,
+    Dash
+}
+
+public class PlayerMovement : AgentModuleBase
+{
+
+    private IMovement dashModule;
+    private IMovement wallRunningModule;
+    private IMovement jumpModule;
+
+    public Vector3 startPosition;
+    public Quaternion startRotation;
+    public Vector3 startScale;
+    public Transform playerTransform;
+    public Rigidbody Rigidbody;
+
+    public float MovementSpeed;
+    public float maxSpeed;
+    public float JumpForce;
+    public float SideJumpForce;
+    public float DoubleJumpForce;
+    public float dashForce;
+    public float dashDuration;
+
+
+    public List<MovementState> DirectionsPressed;
+    private Vector3 directionVector = Vector3.zero;
+    public bool isJumping;
+    public bool canDoubleJump;
+
+    public bool doubleJumpPowerUpPickedUp;
+    public bool dashPowerUpPickedUp;
+    public bool wallRunPowerUpPickedUp;
+
+    public bool isWallRunning = false;
+    public bool wallLeft = false;
+    public bool wallRight = false;
+
+
+    // Swinging with rope
+    /*
+    private bool isNearRope = false;
+    private bool isOnRope = false;
+    private GameObject currentRope;
+    public float swingForce = 2f;
+    */
+
+    private GameObject currentRopeSegment; // The segment the player is currently holding onto
+    private bool isHoldingRope = false;
+    public float swingForce = 2f;
+    private Vector3 currentRopeSegmentCollisionNormal;
+
+
+
+    //private void Awake()
+    //{
+    //    this.Priority = 10000;
+    //}
+
+    public override IEnumerator IE_Initialize()
+    {
+
+        yield return StartCoroutine(base.IE_Initialize());
+        this.moduleName = "Player Movement Module";
+        
+
+        Rigidbody.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+        DirectionsPressed = new List<MovementState>();
+        maxSpeed = 10f;
+
+        isJumping = false;
+        canDoubleJump = false;
+
+        doubleJumpPowerUpPickedUp = false;
+        dashPowerUpPickedUp = false;
+        wallRunPowerUpPickedUp = false;
+
+
+        dashModule = new MovementDash();
+        dashModule.Initialize(Rigidbody, playerTransform, this);
+
+        wallRunningModule = new MovementWallRunning();
+        wallRunningModule.Initialize(Rigidbody, playerTransform, this);
+
+        jumpModule = new MovementJump();
+        jumpModule.Initialize(Rigidbody, playerTransform, this);
+
+    }
+
+    public override IEnumerator IE_Activate()
+    {
+        yield return StartCoroutine(base.IE_Activate());
+
+    }
+
+    public override IEnumerator IE_Restart()
+    {
+        yield return StartCoroutine(base.IE_Restart());
+
+        playerTransform.position = startPosition;
+        playerTransform.rotation = startRotation;
+        playerTransform.localScale = startScale;
+        isJumping = false;
+        canDoubleJump = false;
+        doubleJumpPowerUpPickedUp = false;
+        dashPowerUpPickedUp = false;
+        wallRunPowerUpPickedUp = false;
+        DirectionsPressed.Clear();
+
+        isWallRunning = false;
+        wallLeft = false;
+        wallRight = false;
+        Rigidbody.velocity = Vector3.zero;
+
+
+    }
+
+
+    public override bool Tick()
+    {
+        if (base.Tick())
+        {
+            CheckRopeAction();
+
+
+            if (!isHoldingRope)
+            {
+                CheckKeyPress();
+
+                CheckKeyRelease();
+
+                dashModule.Tick();
+
+                if (wallRunPowerUpPickedUp) wallRunningModule.Tick();
+
+                jumpModule.Tick();
+            } else
+            {
+                //transform.position = currentSegment.transform.position + Vector3.down * hangingOffset;
+                //playerTransform.position = currentRopeSegment.transform.position + Vector3.right;
+                playerTransform.position = currentRopeSegment.transform.position + currentRopeSegmentCollisionNormal;
+
+
+                if (Input.GetKeyDown(KeyCode.W))
+                {
+                    Swing("Forward"); // Swing forward
+                }
+                else if (Input.GetKeyDown(KeyCode.S))
+                {
+                    Swing("Backward"); // Swing backward
+                }
+                else if (Input.GetKeyDown(KeyCode.D))
+                {
+                    Swing("Rightward"); // Swing rightward
+                }
+                else if (Input.GetKeyDown(KeyCode.A))
+                {
+                    Swing("Leftward"); // Swing leftward
+                }
+
+            }
+
+            return true;
+
+        }
+
+        return false;
+
+
+
+    }
+
+    public override bool FixedTick()
+    {
+        if (base.FixedTick())
+        {
+            Move();
+
+            if (!isHoldingRope)
+            {
+
+            }
+            dashModule.FixedTick();
+        
+            if(wallRunPowerUpPickedUp) wallRunningModule.FixedTick();
+
+            jumpModule.FixedTick();
+
+            return true;
+        }
+
+        return false;
+
+
+
+    }
+
+    public bool getIsWallRunning()
+    {
+        return isWallRunning;
+    }
+
+    public void setIsWallRunning(bool isWallRunning)
+    {
+        this.isWallRunning = isWallRunning;
+    }
+
+    public bool getIsJumping()
+    {
+        return isJumping;
+    }
+
+    public void setIsJumping(bool isJumping)
+    {
+        this.isJumping = isJumping;
+    }
+
+    public bool getWallLeft()
+    {
+        return wallLeft;
+    }
+
+    public void setWallLeft(bool wallLeft)
+    {
+        this.wallLeft = wallLeft;
+    }
+
+    public bool getWallRight()
+    {
+        return wallRight;
+    }
+
+    public void setWallRight(bool wallRight)
+    {
+        this.wallRight = wallRight;
+    }
+
+
+
+    private void CheckKeyPress()
+    {
+        if (Input.GetKeyDown(KeyCode.W))
+        {
+            if (!DirectionsPressed.Contains(MovementState.Forward))
+            {
+                DirectionsPressed.Add(MovementState.Forward);
+            }
+        }
+        if (Input.GetKeyDown(KeyCode.S))
+        {
+            if (!DirectionsPressed.Contains(MovementState.Backward))
+            {
+                DirectionsPressed.Add(MovementState.Backward);
+            }
+        }
+        if (Input.GetKeyDown(KeyCode.A))
+        {
+            if (!DirectionsPressed.Contains(MovementState.Leftward))
+            {
+                DirectionsPressed.Add(MovementState.Leftward);
+            }
+        }
+        if (Input.GetKeyDown(KeyCode.D))
+        {
+            if (!DirectionsPressed.Contains(MovementState.Rightward))
+            {
+                DirectionsPressed.Add(MovementState.Rightward);
+            }
+        }
+
+        if (Input.GetKeyDown(KeyCode.Space) && !isJumping && !isWallRunning)
+        {
+            if (!DirectionsPressed.Contains(MovementState.Jump))
+            {
+                DirectionsPressed.Add(MovementState.Jump);
+            }
+        }
+
+
+
+        if (Input.GetKeyDown(KeyCode.Space) && isJumping && canDoubleJump && !isWallRunning && doubleJumpPowerUpPickedUp)
+        {
+            if (!DirectionsPressed.Contains(MovementState.Jump))
+            {
+                DirectionsPressed.Add(MovementState.Jump);
+            }
+        }
+
+
+        if (Input.GetKeyDown(KeyCode.LeftShift) && dashPowerUpPickedUp)
+        {
+            if (!DirectionsPressed.Contains(MovementState.Dash))
+            {
+                DirectionsPressed.Add(MovementState.Dash);
+            }
+        }
+
+    }
+
+    private void CheckKeyRelease()
+    {
+        if (Input.GetKeyUp(KeyCode.W))
+        {
+            DirectionsPressed.Remove(MovementState.Forward);
+        }
+        if (Input.GetKeyUp(KeyCode.S))
+        {
+            DirectionsPressed.Remove(MovementState.Backward);
+        }
+        if (Input.GetKeyUp(KeyCode.A))
+        {
+            DirectionsPressed.Remove(MovementState.Leftward);
+        }
+        if (Input.GetKeyUp(KeyCode.D))
+        {
+            DirectionsPressed.Remove(MovementState.Rightward);
+        }
+
+
+    }
+
+    private void Move()
+    {
+        directionVector = Vector3.zero;
+
+
+        PlayerCamera cameraModule = Parent.GetModule<PlayerCamera>();
+
+        if (cameraModule != null)
+        {
+            playerTransform.eulerAngles = new Vector3(0f, cameraModule.yaw, 0f);
+        }
+
+
+
+        foreach (var direction in DirectionsPressed)
+        {
+            switch (direction)
+            {
+                case MovementState.Forward:
+                    directionVector += playerTransform.forward;
+                    break;
+                case MovementState.Backward:
+                    directionVector -= playerTransform.forward;
+                    break;
+                case MovementState.Leftward:
+                    directionVector -= playerTransform.right;
+                    break;
+                case MovementState.Rightward:
+                    directionVector += playerTransform.right;
+                    break;
+            }
+        }
+
+        if (directionVector != Vector3.zero)
+        {
+            directionVector.Normalize();
+            if (Rigidbody.velocity.magnitude < maxSpeed)
+            {
+                Rigidbody.AddForce(directionVector * (MovementSpeed * Time.fixedDeltaTime), ForceMode.VelocityChange);
+            }
+        }
+
+
+
+    }
+
+
+    /*
+
+    public void GetReadyToGrabRope(Collider other)
+    {
+        if (other.CompareTag("Rope"))
+        {
+            isNearRope = true;
+            currentRope = other.gameObject;
+        }
+    }
+
+    public void GetReadyToReleaseRope(Collider other)
+    {
+        if (other.CompareTag("Rope"))
+        {
+            isNearRope = false;
+            currentRope = null;
+        }
+    }
+    
+    void CheckRopeAction()
+    {
+
+        if (isNearRope && Input.GetKeyDown(KeyCode.E) && !isOnRope)
+        {
+            GrabRope();
+        }
+        else if (Input.GetKeyDown(KeyCode.Space) && isOnRope)
+        {
+            ReleaseRope();
+        }
+    }
+
+    */
+
+    void CheckRopeAction()
+    {
+        if (Input.GetKeyDown(KeyCode.E) && currentRopeSegment != null && !isHoldingRope)
+        {
+            GrabRope();
+        }
+        else if (Input.GetKeyDown(KeyCode.Space) && isHoldingRope) // Use space key to release
+        {
+            ReleaseRope();
+        }
+    }
+
+    void GrabRope()
+    {
+        isHoldingRope = true;
+        //Rigidbody.isKinematic = true; // Disable physics-driven movement
+        Rigidbody.useGravity = false;
+    }
+
+    void ReleaseRope()
+    {
+        float forceMultiplier = 1f;
+        isHoldingRope = false;
+        Vector3 lastSegmentVelocity = currentRopeSegment.GetComponent<Rigidbody>().velocity;
+        Rigidbody.useGravity = true;
+        Rigidbody.velocity = lastSegmentVelocity;
+
+        //Rigidbody.AddForce(lastSegmentVelocity * forceMultiplier, ForceMode.VelocityChange);
+
+        currentRopeSegment = null;
+        //Rigidbody.isKinematic = false; // Re-enable physics-driven movement
+    }
+
+
+    /*
+    void GrabRope()
+    {
+        
+        isOnRope = true;
+        //Rigidbody.isKinematic = true; // Disable physics-driven movement while on the rope
+        Rigidbody.useGravity = false;
+
+        // Optionally, set the player's position to the rope's position or a specific grabbing point
+        transform.position = currentRope.transform.position;
+
+        // Disable or modify the player's collider if necessary to prevent unwanted physics interactions
+        PlayerController parent = (PlayerController)GetParent();
+        parent.GetComponent<Collider>().enabled = false;
+
+        // Any other setup for grabbing the rope, such as animating the player's hands to hold the rope
+       
+    }
+
+    void ReleaseRope()
+    {
+        isOnRope = false;
+        //Rigidbody.isKinematic = false; // Re-enable physics-driven movement
+        Rigidbody.useGravity = true;
+        // Re-enable the player's collider if it was disabled
+        PlayerController parent = (PlayerController)GetParent();
+        parent.GetComponent<Collider>().enabled = true;
+
+        // Any other cleanup for releasing the rope
+    }
+    */
+
+    void Swing(string direction)
+    {
+        Rigidbody rb = currentRopeSegment.GetComponent<Rigidbody>();
+        // Apply a force in the direction of the player's forward vector times the input direction
+        Vector3 forceDirection = Vector3.zero;
+        switch (direction)
+        {
+            case "Forward":
+                forceDirection = transform.forward;
+                break;
+            case "Backward":
+                forceDirection = -transform.forward;
+                break;
+            case "Rightward":
+                forceDirection = transform.right;
+                break;
+            case "Leftward":
+                forceDirection = -transform.right;
+                break;
+            default:
+                break;
+        }
+        
+        rb.AddForce(forceDirection * swingForce, ForceMode.Impulse);
+    }
+
+    public void HandleCollisionEnter(Collision other)
+    {
+        if (other.gameObject.CompareTag("Wall"))
+        {
+            return;
+        }
+
+        if (other.gameObject.CompareTag("RopeSegment"))
+        {
+            Debug.Log("Rope Segment Parent: " + other.transform.parent.gameObject.name);
+            if (currentRopeSegment == null || other.transform.parent.gameObject != currentRopeSegment.transform.parent.gameObject)
+            {
+                currentRopeSegmentCollisionNormal = other.contacts[0].normal; // Get the normal of the first contact point
+                
+                currentRopeSegment = other.transform.gameObject;
+                
+            }
+            
+        }
+
+
+        if (isJumping)
+        {
+            isJumping = false;
+            canDoubleJump = false;
+
+        }
+
+        if (other.gameObject.CompareTag("Ground"))
+        {
+
+            if (other.impulse.y > 8f)
+            {
+                PlayerAudio playerAudio = Parent.GetModule<PlayerAudio>();
+                PlayerEffects playerEffects = Parent.GetModule<PlayerEffects>();
+
+                if (playerAudio != null)
+                {
+                    playerAudio.PlayerAudioState = AudioState.Land;
+                }
+
+                if (playerEffects != null)
+                {
+                    playerEffects.LandingImpulse = other.impulse;
+                    playerEffects.PlayerEffectState = EffectState.Land;
+                }
+
+              
+
+            }
+
+
+        }
+    }
+
+    public void HandleCollisionExit(Collision other)
+    {
+        if (other.gameObject.CompareTag("RopeSegment"))
+        {
+            currentRopeSegment = null;
+        }
+    }
+
+}
+
