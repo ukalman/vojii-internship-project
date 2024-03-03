@@ -48,27 +48,13 @@ public class PlayerMovement : AgentModuleBase
     public bool isWallRunning = false;
     public bool wallLeft = false;
     public bool wallRight = false;
-
-
-    // Swinging with rope
-    /*
-    private bool isNearRope = false;
-    private bool isOnRope = false;
-    private GameObject currentRope;
-    public float swingForce = 2f;
-    */
+    
 
     private GameObject currentRopeSegment; // The segment the player is currently holding onto
     private bool isHoldingRope = false;
     public float swingForce = 2f;
     private Vector3 currentRopeSegmentCollisionNormal;
-
-
-
-    //private void Awake()
-    //{
-    //    this.Priority = 10000;
-    //}
+    
 
     public override IEnumerator IE_Initialize()
     {
@@ -207,49 +193,7 @@ public class PlayerMovement : AgentModuleBase
 
 
     }
-
-    public bool getIsWallRunning()
-    {
-        return isWallRunning;
-    }
-
-    public void setIsWallRunning(bool isWallRunning)
-    {
-        this.isWallRunning = isWallRunning;
-    }
-
-    public bool getIsJumping()
-    {
-        return isJumping;
-    }
-
-    public void setIsJumping(bool isJumping)
-    {
-        this.isJumping = isJumping;
-    }
-
-    public bool getWallLeft()
-    {
-        return wallLeft;
-    }
-
-    public void setWallLeft(bool wallLeft)
-    {
-        this.wallLeft = wallLeft;
-    }
-
-    public bool getWallRight()
-    {
-        return wallRight;
-    }
-
-    public void setWallRight(bool wallRight)
-    {
-        this.wallRight = wallRight;
-    }
-
-
-
+    
     private void CheckKeyPress()
     {
         if (Input.GetKeyDown(KeyCode.W))
@@ -379,41 +323,6 @@ public class PlayerMovement : AgentModuleBase
     }
 
 
-    /*
-
-    public void GetReadyToGrabRope(Collider other)
-    {
-        if (other.CompareTag("Rope"))
-        {
-            isNearRope = true;
-            currentRope = other.gameObject;
-        }
-    }
-
-    public void GetReadyToReleaseRope(Collider other)
-    {
-        if (other.CompareTag("Rope"))
-        {
-            isNearRope = false;
-            currentRope = null;
-        }
-    }
-    
-    void CheckRopeAction()
-    {
-
-        if (isNearRope && Input.GetKeyDown(KeyCode.E) && !isOnRope)
-        {
-            GrabRope();
-        }
-        else if (Input.GetKeyDown(KeyCode.Space) && isOnRope)
-        {
-            ReleaseRope();
-        }
-    }
-
-    */
-
     void CheckRopeAction()
     {
         if (Input.GetKeyDown(KeyCode.E) && currentRopeSegment != null && !isHoldingRope)
@@ -446,39 +355,7 @@ public class PlayerMovement : AgentModuleBase
         currentRopeSegment = null;
         //Rigidbody.isKinematic = false; // Re-enable physics-driven movement
     }
-
-
-    /*
-    void GrabRope()
-    {
-        
-        isOnRope = true;
-        //Rigidbody.isKinematic = true; // Disable physics-driven movement while on the rope
-        Rigidbody.useGravity = false;
-
-        // Optionally, set the player's position to the rope's position or a specific grabbing point
-        transform.position = currentRope.transform.position;
-
-        // Disable or modify the player's collider if necessary to prevent unwanted physics interactions
-        PlayerController parent = (PlayerController)GetParent();
-        parent.GetComponent<Collider>().enabled = false;
-
-        // Any other setup for grabbing the rope, such as animating the player's hands to hold the rope
-       
-    }
-
-    void ReleaseRope()
-    {
-        isOnRope = false;
-        //Rigidbody.isKinematic = false; // Re-enable physics-driven movement
-        Rigidbody.useGravity = true;
-        // Re-enable the player's collider if it was disabled
-        PlayerController parent = (PlayerController)GetParent();
-        parent.GetComponent<Collider>().enabled = true;
-
-        // Any other cleanup for releasing the rope
-    }
-    */
+    
 
     void Swing(string direction)
     {
