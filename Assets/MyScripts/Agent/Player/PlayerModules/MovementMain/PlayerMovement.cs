@@ -62,6 +62,7 @@ public class PlayerMovement : AgentModuleBase
         yield return StartCoroutine(base.IE_Initialize());
         this.moduleName = "Player Movement Module";
         
+        Debug.Log("Hello there, Now we're in the Character controller branch.");
 
         Rigidbody.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
         DirectionsPressed = new List<MovementState>();
