@@ -4,7 +4,8 @@ using UnityEngine;
 
 public class MovementWallRunning : IMovement
 {
-    private Rigidbody playerRigidbody;
+    //private Rigidbody playerRigidbody;
+    private CharacterController playerController;
     private Transform playerTransform;
     private PlayerMovement owner;
 
@@ -17,9 +18,9 @@ public class MovementWallRunning : IMovement
     private bool jumpToLeft;
     private bool jumpToRight;
 
-    public void Initialize(Rigidbody playerRigidbody, Transform playerTransform, MonoBehaviour owner)
+    public void Initialize(CharacterController playerController, Transform playerTransform, MonoBehaviour owner)
     {
-        this.playerRigidbody = playerRigidbody;
+        this.playerController = playerController;
         this.playerTransform = playerTransform;
         this.owner = (PlayerMovement)owner;
 
@@ -100,6 +101,12 @@ public class MovementWallRunning : IMovement
 
     private void WallRunningMovement()
     {
+        
+    }
+    
+    /*
+    private void WallRunningMovement()
+    {
         if (owner.isWallRunning)
         {
             playerRigidbody.useGravity = false;
@@ -130,12 +137,17 @@ public class MovementWallRunning : IMovement
             }
         }
 
-
-
-
-
     }
+    */
 
+
+    private void StopWallRun()
+    {
+        
+    }
+    
+    
+    /*
     private void StopWallRun()
     {
         //owner.setIsWallRunning(false);
@@ -143,7 +155,15 @@ public class MovementWallRunning : IMovement
         //isWallRunning = false;
         playerRigidbody.useGravity = true;
     }
+    */
 
+
+    private void JumpToLeft()
+    {
+        
+    }
+    
+    /*
     private void JumpToLeft()
     {
 
@@ -155,7 +175,14 @@ public class MovementWallRunning : IMovement
             owner.isJumping = true;
         }
     }
+    */
 
+    private void JumpToRight()
+    {
+        
+    }
+    
+    /*
     private void JumpToRight()
     {
         if (!owner.isJumping)
@@ -166,4 +193,5 @@ public class MovementWallRunning : IMovement
             owner.isJumping = true;
         }
     }
+    */
 }

@@ -4,7 +4,8 @@ using UnityEngine;
 
 public interface IMovement
 {
-    void Initialize(Rigidbody playerRigidbody, Transform playerTransform, MonoBehaviour owner);
+    //void Initialize(Rigidbody playerRigidbody, Transform playerTransform, MonoBehaviour owner);
+    void Initialize(CharacterController playerController, Transform playerTransform, MonoBehaviour owner);
     void Tick();
     void FixedTick();
 }

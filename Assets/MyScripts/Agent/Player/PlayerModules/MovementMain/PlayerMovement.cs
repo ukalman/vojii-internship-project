@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 
 public enum MovementState
@@ -25,7 +26,11 @@ public class PlayerMovement : AgentModuleBase
     public Quaternion startRotation;
     public Vector3 startScale;
     public Transform playerTransform;
-    public Rigidbody Rigidbody;
+    //public Rigidbody Rigidbody;
+
+    public CharacterController playerController;
+    private PlayerCamera _cameraModule;
+    
 
     public float MovementSpeed;
     public float maxSpeed;
@@ -61,10 +66,11 @@ public class PlayerMovement : AgentModuleBase
 
         yield return StartCoroutine(base.IE_Initialize());
         this.moduleName = "Player Movement Module";
+        _cameraModule = Parent.GetModule<PlayerCamera>();
         
         Debug.Log("Hello there, Now we're in the Character controller branch.");
 
-        Rigidbody.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+        //Rigidbody.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
         DirectionsPressed = new List<MovementState>();
         maxSpeed = 10f;
 
@@ -77,13 +83,16 @@ public class PlayerMovement : AgentModuleBase
 
 
         dashModule = new MovementDash();
-        dashModule.Initialize(Rigidbody, playerTransform, this);
-
+        //dashModule.Initialize(Rigidbody, playerTransform, this);
+        dashModule.Initialize(playerController, playerTransform, this);
+        
         wallRunningModule = new MovementWallRunning();
-        wallRunningModule.Initialize(Rigidbody, playerTransform, this);
+        //wallRunningModule.Initialize(Rigidbody, playerTransform, this);
+        wallRunningModule.Initialize(playerController, playerTransform, this);
 
         jumpModule = new MovementJump();
-        jumpModule.Initialize(Rigidbody, playerTransform, this);
+        //jumpModule.Initialize(Rigidbody, playerTransform, this);
+        jumpModule.Initialize(playerController, playerTransform, this);
 
     }
 
@@ -110,7 +119,7 @@ public class PlayerMovement : AgentModuleBase
         isWallRunning = false;
         wallLeft = false;
         wallRight = false;
-        Rigidbody.velocity = Vector3.zero;
+        //Rigidbody.velocity = Vector3.zero;
 
 
     }
@@ -118,6 +127,27 @@ public class PlayerMovement : AgentModuleBase
 
     public override bool Tick()
     {
+        if (base.Tick())
+        {
+            
+            
+            
+            float x = Input.GetAxis("Horizontal");
+            float z = Input.GetAxis("Vertical");
+
+            Vector3 move = transform.right * x + transform.forward * z;
+
+            playerController.Move(move * (MovementSpeed * Time.deltaTime));
+     
+            return true;
+        }
+
+        return false;
+
+
+
+        /*
+
         if (base.Tick())
         {
             CheckRopeAction();
@@ -165,6 +195,7 @@ public class PlayerMovement : AgentModuleBase
         }
 
         return false;
+        */
 
 
 
@@ -172,8 +203,22 @@ public class PlayerMovement : AgentModuleBase
 
     public override bool FixedTick()
     {
+
         if (base.FixedTick())
         {
+            playerTransform.eulerAngles = new Vector3(0f, _cameraModule.yaw, 0f);
+
+            return true;
+        }
+
+        return false;
+
+
+        /*
+        if (base.FixedTick())
+        {
+
+
             Move();
 
             if (!isHoldingRope)
@@ -181,7 +226,7 @@ public class PlayerMovement : AgentModuleBase
 
             }
             dashModule.FixedTick();
-        
+
             if(wallRunPowerUpPickedUp) wallRunningModule.FixedTick();
 
             jumpModule.FixedTick();
@@ -190,7 +235,7 @@ public class PlayerMovement : AgentModuleBase
         }
 
         return false;
-
+        */
 
 
     }
@@ -313,10 +358,12 @@ public class PlayerMovement : AgentModuleBase
         if (directionVector != Vector3.zero)
         {
             directionVector.Normalize();
+            /*
             if (Rigidbody.velocity.magnitude < maxSpeed)
             {
                 Rigidbody.AddForce(directionVector * (MovementSpeed * Time.fixedDeltaTime), ForceMode.VelocityChange);
             }
+            */
         }
 
 
@@ -340,21 +387,19 @@ public class PlayerMovement : AgentModuleBase
     {
         isHoldingRope = true;
         //Rigidbody.isKinematic = true; // Disable physics-driven movement
-        Rigidbody.useGravity = false;
+        //Rigidbody.useGravity = false;
     }
 
     void ReleaseRope()
     {
         float forceMultiplier = 1f;
         isHoldingRope = false;
-        Vector3 lastSegmentVelocity = currentRopeSegment.GetComponent<Rigidbody>().velocity;
-        Rigidbody.useGravity = true;
-        Rigidbody.velocity = lastSegmentVelocity;
-
-        //Rigidbody.AddForce(lastSegmentVelocity * forceMultiplier, ForceMode.VelocityChange);
+        // Vector3 lastSegmentVelocity = currentRopeSegment.GetComponent<Rigidbody>().velocity;
+        // Rigidbody.useGravity = true;
+        // Rigidbody.velocity = lastSegmentVelocity;
 
         currentRopeSegment = null;
-        //Rigidbody.isKinematic = false; // Re-enable physics-driven movement
+
     }
     
 

@@ -4,7 +4,8 @@ using UnityEngine;
 
 public class MovementDash : IMovement
 {
-    private Rigidbody playerRigidbody;
+    //private Rigidbody playerRigidbody;
+    private CharacterController playerController;
     private Transform playerTransform;
     private PlayerMovement owner;
 
@@ -13,9 +14,9 @@ public class MovementDash : IMovement
     public float dashForce = 20f;
     public float dashDuration = 0.5f;
 
-    public void Initialize(Rigidbody playerRigidbody, Transform playerTransform, MonoBehaviour owner)
+    public void Initialize(CharacterController playerController, Transform playerTransform, MonoBehaviour owner)
     {
-        this.playerRigidbody = playerRigidbody;
+        this.playerController = playerController;
         this.playerTransform = playerTransform;
         this.owner = (PlayerMovement)owner;
 
@@ -33,7 +34,7 @@ public class MovementDash : IMovement
         if (isDashing && Time.time >= dashEndTime)
         {
             isDashing = false;
-            playerRigidbody.velocity = Vector3.zero;
+            //playerRigidbody.velocity = Vector3.zero;
         }
     }
 
@@ -46,7 +47,7 @@ public class MovementDash : IMovement
     {
         owner.GetParent().GetModule<PlayerAudio>().PlayerAudioState = AudioState.Dash;
         Vector3 dashDirection = playerTransform.forward;
-        playerRigidbody.velocity = dashDirection * dashForce;
+        //playerRigidbody.velocity = dashDirection * dashForce;
         isDashing = true;
         dashEndTime = Time.time + dashDuration;
     }
@@ -56,7 +57,7 @@ public class MovementDash : IMovement
         if (isDashing)
         {
             Vector3 dashDirection = playerTransform.forward;
-            playerRigidbody.velocity = dashDirection * dashForce;
+            //playerRigidbody.velocity = dashDirection * dashForce;
             isDashing = true;
             dashEndTime = Time.time + dashDuration;
 
@@ -70,7 +71,7 @@ public class MovementDash : IMovement
     private IEnumerator StopDash()
     {
         yield return new WaitForSeconds(dashDuration);
-        playerRigidbody.velocity = Vector3.zero; // stop player's movement instantly
+        //playerRigidbody.velocity = Vector3.zero; // stop player's movement instantly
         isDashing = false;
     }
 }

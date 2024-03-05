@@ -4,16 +4,17 @@ using UnityEngine;
 
 public class MovementJump : IMovement
 {
-    private Rigidbody playerRigidbody;
+    //private Rigidbody playerRigidbody;
+    private CharacterController playerController;
     private Transform playerTransform;
     private PlayerMovement owner;
 
     private bool canJump;
     private bool canDoubleJump;
 
-    public void Initialize(Rigidbody playerRigidbody, Transform playerTransform, MonoBehaviour owner)
+    public void Initialize(CharacterController playerController, Transform playerTransform, MonoBehaviour owner)
     {
-        this.playerRigidbody = playerRigidbody;
+        this.playerController = playerController;
         this.playerTransform = playerTransform;
         this.owner = (PlayerMovement)owner;
 
@@ -40,7 +41,13 @@ public class MovementJump : IMovement
 
     }
 
+    private void Jump()
+    {
+        
+    }
+    
 
+    /*
     private void Jump()
     {
         if (!owner.isJumping)
@@ -64,6 +71,7 @@ public class MovementJump : IMovement
 
 
     }
+    */
 
     private void CheckJump()
     {
