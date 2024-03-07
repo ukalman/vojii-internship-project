@@ -39,6 +39,7 @@ public class GameManager : MonoBehaviour
         }
 
         fpsCamera.transform.SetParent(Player.transform);
+        //mainCamera.transform.SetParent(Player.transform);
         pistolUI.SetActive(false);
         katanaUI.SetActive(false);
     }

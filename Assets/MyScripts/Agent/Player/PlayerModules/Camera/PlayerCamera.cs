@@ -1,12 +1,14 @@
 ﻿
 using System.Collections;
+using UnityEditor.Rendering;
 using UnityEngine;
 
 
 public class PlayerCamera : ModuleBase
 {
-
+ 
     public Transform cameraTransform;
+    public Transform playerTransform;
     public Transform visorTransform;
 
     public Vector3 offset;
@@ -19,8 +21,12 @@ public class PlayerCamera : ModuleBase
     public float pitch;
     public float yaw;
 
-    private bool fpsCamOn;
+    public bool fpsCamOn;
 
+    private float xRotation = 0f;
+
+    [SerializeField] private Camera mainCamera;
+    
     [SerializeField] private Camera fpsCamera;
     [SerializeField] private float aimFOV = 45f; 
     [SerializeField] private float normalFOV = 60f; 
@@ -110,18 +116,37 @@ public class PlayerCamera : ModuleBase
     }
 
     private void HandleInputForCamera()
-    {  
+    {
 
-        yaw += Input.GetAxis("Mouse X") * sensitivity * Time.deltaTime;
-        pitch -= Input.GetAxis("Mouse Y") * sensitivity * Time.deltaTime;
-        pitch = Mathf.Clamp(pitch, -85f, 85f);
+        float mouseX = Input.GetAxis("Mouse X") * sensitivity * Time.deltaTime;
+        float mouseY = Input.GetAxis("Mouse Y") * sensitivity * Time.deltaTime;
 
+
+        if (fpsCamOn)
+        {
+            
+
+            xRotation -= mouseY;
+            xRotation = Mathf.Clamp(xRotation, -90f, 90f);
+            
+            cameraTransform.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
+            
+            playerTransform.Rotate(Vector3.up * mouseX);
+        }
+        else
+        {
+            yaw += mouseX;
+            pitch -= mouseY; // mouse y
+            pitch = Mathf.Clamp(pitch, -90f, 90f); 
+            
+            cameraTransform.eulerAngles = new Vector3(pitch, yaw, 0.0f);
+            playerTransform.eulerAngles = new Vector3(0f, yaw, 0f);
+        }
+        
+        
         currentZoom -= Input.GetAxis("Mouse ScrollWheel") * zoomSpeed;
         currentZoom = Mathf.Clamp(currentZoom, minZoom, maxZoom);
-
-
-        cameraTransform.eulerAngles = new Vector3(pitch, yaw, 0.0f);
-
+        
  
     }
 

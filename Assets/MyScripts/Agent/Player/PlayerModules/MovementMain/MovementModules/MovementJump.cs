@@ -24,26 +24,42 @@ public class MovementJump : IMovement
 
     public void Tick()
     {
-        CheckJump();
+        //CheckJump();
+        Jump();
     }
 
     public void FixedTick()
     {
-        if (canJump)
-        {
-            Jump();
-        }
-
-        if (canDoubleJump)
-        {
-            Jump();
-        }
+        // if (canJump)
+        // {
+        //     Jump();
+        // }
+        //
+        // if (canDoubleJump)
+        // {
+        //     Jump();
+        // }
 
     }
 
     private void Jump()
     {
+        if (Input.GetButtonDown("Jump"))
+        {
+            if (owner.isGrounded)
+            {
+                Debug.Log("Jumping!");
+                owner.verticalVelocity.y = Mathf.Sqrt(owner.jumpHeight * -2f * owner.gravity);
+                owner.canDoubleJump = true; 
+            } else if (owner.canDoubleJump && !owner.isGrounded)
+            {
+                Debug.Log("Double Jumping!");
+                owner.verticalVelocity.y = Mathf.Sqrt(owner.jumpHeight * -2f * owner.gravity);
+                owner.canDoubleJump = false;
+            }
+        }
         
+     
     }
     
 
@@ -73,6 +89,8 @@ public class MovementJump : IMovement
     }
     */
 
+    /*
+    
     private void CheckJump()
     {
         if ((owner.DirectionsPressed.Contains(MovementState.Jump) && !owner.isJumping))
@@ -93,4 +111,5 @@ public class MovementJump : IMovement
             owner.DirectionsPressed.Remove(MovementState.Jump);
         }
     }
+    */
 }

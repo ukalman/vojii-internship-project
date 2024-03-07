@@ -1,4 +1,5 @@
 ﻿
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -28,9 +29,10 @@ public class PlayerMovement : AgentModuleBase
     public Transform playerTransform;
     //public Rigidbody Rigidbody;
 
-    public CharacterController playerController;
+    [FormerlySerializedAs("playerController")] public CharacterController playerCharacterController;
     private PlayerCamera _cameraModule;
-    
+    public float turnSmoothTime = 0.1f;
+    private float _turnSmoothVelocity;
 
     public float MovementSpeed;
     public float maxSpeed;
@@ -43,6 +45,18 @@ public class PlayerMovement : AgentModuleBase
 
     public List<MovementState> DirectionsPressed;
     private Vector3 directionVector = Vector3.zero;
+
+    
+    // Falling with Gravity and Ground
+    public float gravity = -16.677f;
+    public Transform groundCheck;
+    public float groundDistance = 0.4f;
+    public LayerMask groundMask;
+    public Vector3 verticalVelocity;
+    public bool isGrounded;
+
+
+    public float jumpHeight = 3f;
     public bool isJumping;
     public bool canDoubleJump;
 
@@ -84,15 +98,15 @@ public class PlayerMovement : AgentModuleBase
 
         dashModule = new MovementDash();
         //dashModule.Initialize(Rigidbody, playerTransform, this);
-        dashModule.Initialize(playerController, playerTransform, this);
+        dashModule.Initialize(playerCharacterController, playerTransform, this);
         
         wallRunningModule = new MovementWallRunning();
         //wallRunningModule.Initialize(Rigidbody, playerTransform, this);
-        wallRunningModule.Initialize(playerController, playerTransform, this);
+        wallRunningModule.Initialize(playerCharacterController, playerTransform, this);
 
         jumpModule = new MovementJump();
         //jumpModule.Initialize(Rigidbody, playerTransform, this);
-        jumpModule.Initialize(playerController, playerTransform, this);
+        jumpModule.Initialize(playerCharacterController, playerTransform, this);
 
     }
 
@@ -115,7 +129,8 @@ public class PlayerMovement : AgentModuleBase
         dashPowerUpPickedUp = false;
         wallRunPowerUpPickedUp = false;
         DirectionsPressed.Clear();
-
+        
+        
         isWallRunning = false;
         wallLeft = false;
         wallRight = false;
@@ -129,16 +144,10 @@ public class PlayerMovement : AgentModuleBase
     {
         if (base.Tick())
         {
-            
-            
-            
-            float x = Input.GetAxis("Horizontal");
-            float z = Input.GetAxis("Vertical");
+            Move();
+            Fall();
+            jumpModule.Tick();
 
-            Vector3 move = transform.right * x + transform.forward * z;
-
-            playerController.Move(move * (MovementSpeed * Time.deltaTime));
-     
             return true;
         }
 
@@ -201,12 +210,13 @@ public class PlayerMovement : AgentModuleBase
 
     }
 
+  
     public override bool FixedTick()
     {
 
         if (base.FixedTick())
         {
-            playerTransform.eulerAngles = new Vector3(0f, _cameraModule.yaw, 0f);
+            //playerTransform.eulerAngles = new Vector3(0f, _cameraModule.yaw, 0f);
 
             return true;
         }
@@ -322,19 +332,55 @@ public class PlayerMovement : AgentModuleBase
 
     }
 
+    
+    
     private void Move()
     {
-        directionVector = Vector3.zero;
+        float x_fps = Input.GetAxis("Horizontal");
+        float z_fps = Input.GetAxis("Vertical");
+        
+        float horizontal_tps = Input.GetAxisRaw("Horizontal");
+        float vertical_tps = Input.GetAxisRaw("Vertical");
 
 
-        PlayerCamera cameraModule = Parent.GetModule<PlayerCamera>();
-
-        if (cameraModule != null)
+        Vector3 direction = Vector3.zero;
+        
+        if (!_cameraModule.fpsCamOn)
         {
-            playerTransform.eulerAngles = new Vector3(0f, cameraModule.yaw, 0f);
+           direction = (transform.right * horizontal_tps + transform.forward * vertical_tps).normalized;
+        }
+        else
+        {
+             direction = transform.right * x_fps + transform.forward * z_fps;
+        }
+        
+
+        playerCharacterController.Move(direction * (MovementSpeed * Time.deltaTime));
+    }
+    
+    private void Fall()
+    {
+        Debug.Log("is grounded: " + isGrounded);
+        isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, groundMask);
+
+        if (isGrounded && verticalVelocity.y < 0)
+        {
+            canDoubleJump = false;
+            verticalVelocity.y = -2f;
         }
 
 
+        verticalVelocity.y += gravity * Time.deltaTime;
+
+        playerCharacterController.Move(verticalVelocity * Time.deltaTime);
+
+    }
+
+    
+    /*
+    private void Move()
+    {
+        directionVector = Vector3.zero;
 
         foreach (var direction in DirectionsPressed)
         {
@@ -358,18 +404,11 @@ public class PlayerMovement : AgentModuleBase
         if (directionVector != Vector3.zero)
         {
             directionVector.Normalize();
-            /*
-            if (Rigidbody.velocity.magnitude < maxSpeed)
-            {
-                Rigidbody.AddForce(directionVector * (MovementSpeed * Time.fixedDeltaTime), ForceMode.VelocityChange);
-            }
-            */
+           
         }
 
-
-
     }
-
+    */
 
     void CheckRopeAction()
     {
