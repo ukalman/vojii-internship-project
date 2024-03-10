@@ -36,6 +36,8 @@ public class MovementDash : IMovement
             isDashing = false;
             nextDashTime = Time.time + dashCooldown; // Set the next time the player is allowed to dash
         }
+
+       
     }
 
     public void FixedTick()

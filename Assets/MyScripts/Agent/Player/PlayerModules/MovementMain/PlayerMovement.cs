@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Security;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -35,6 +36,8 @@ public class PlayerMovement : AgentModuleBase
     [FormerlySerializedAs("playerController")] public CharacterController playerCharacterController;
     private PlayerCamera _cameraModule;
 
+
+    private Vector3 direction = Vector3.zero;
     public float MovementSpeed;
     public float maxSpeed;
     
@@ -54,6 +57,7 @@ public class PlayerMovement : AgentModuleBase
     // Jump
     [Header("Jump Properties")] 
     public float jumpHeight = 3f;
+    public float sideJumpHeight = 2f;
     public bool isJumping;
     public bool canDoubleJump;
 
@@ -164,10 +168,10 @@ public class PlayerMovement : AgentModuleBase
     {
         if (base.Tick())
         {
-            Move();
-            Fall();
+            CheckMove();
             jumpModule.Tick();
             dashModule.Tick();
+            wallRunningModule.Tick();
 
             return true;
         }
@@ -238,7 +242,12 @@ public class PlayerMovement : AgentModuleBase
         if (base.FixedTick())
         {
             //playerTransform.eulerAngles = new Vector3(0f, _cameraModule.yaw, 0f);
+            Move();
+            ApplyGravity();
+            
+            jumpModule.FixedTick();
             dashModule.FixedTick();
+            wallRunningModule.FixedTick();
             
             return true;
         }
@@ -356,7 +365,7 @@ public class PlayerMovement : AgentModuleBase
 
     
     
-    private void Move()
+    private void CheckMove()
     {
         float x_fps = Input.GetAxis("Horizontal");
         float z_fps = Input.GetAxis("Vertical");
@@ -365,7 +374,7 @@ public class PlayerMovement : AgentModuleBase
         float vertical_tps = Input.GetAxisRaw("Vertical");
 
 
-        Vector3 direction = Vector3.zero;
+        direction = Vector3.zero;
         
         if (!_cameraModule.fpsCamOn)
         {
@@ -377,10 +386,15 @@ public class PlayerMovement : AgentModuleBase
         }
         
 
+        
+    }
+
+    private void Move()
+    {
         playerCharacterController.Move(direction * (MovementSpeed * Time.deltaTime));
     }
     
-    private void Fall()
+    private void ApplyGravity()
     {
         Debug.Log("is grounded: " + isGrounded);
         isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, groundMask);
@@ -388,6 +402,8 @@ public class PlayerMovement : AgentModuleBase
         if (isGrounded && verticalVelocity.y < 0)
         {
             canDoubleJump = false;
+            verticalVelocity.x = 0f;
+            verticalVelocity.z = 0f;
             verticalVelocity.y = -2f;
         }
 
