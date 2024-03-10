@@ -18,8 +18,8 @@ public class MovementJump : IMovement
         this.playerTransform = playerTransform;
         this.owner = (PlayerMovement)owner;
 
-        canJump = false;
-        canDoubleJump = false;
+        //canJump = false;
+        //canDoubleJump = false;
     }
 
     public void Tick()
@@ -51,7 +51,7 @@ public class MovementJump : IMovement
                 Debug.Log("Jumping!");
                 owner.verticalVelocity.y = Mathf.Sqrt(owner.jumpHeight * -2f * owner.gravity);
                 owner.canDoubleJump = true; 
-            } else if (owner.canDoubleJump && !owner.isGrounded)
+            } else if (owner.canDoubleJump && !owner.isGrounded && owner.doubleJumpPowerUpPickedUp)
             {
                 Debug.Log("Double Jumping!");
                 owner.verticalVelocity.y = Mathf.Sqrt(owner.jumpHeight * -2f * owner.gravity);
@@ -62,54 +62,4 @@ public class MovementJump : IMovement
      
     }
     
-
-    /*
-    private void Jump()
-    {
-        if (!owner.isJumping)
-        {
-            playerRigidbody.AddForce(Vector3.up * owner.JumpForce, ForceMode.Impulse);
-            owner.isJumping = true;
-            //owner.canDoubleJump = true;
-            canJump = false;
-
-        }
-        else
-        {
-            if (canDoubleJump)
-            {
-
-                playerRigidbody.AddForce(Vector3.up * owner.DoubleJumpForce, ForceMode.Impulse);
-                owner.canDoubleJump = false;
-                canDoubleJump = false;
-            }
-        }
-
-
-    }
-    */
-
-    /*
-    
-    private void CheckJump()
-    {
-        if ((owner.DirectionsPressed.Contains(MovementState.Jump) && !owner.isJumping))
-        {
-            owner.GetParent().GetModule<PlayerAudio>().PlayerAudioState = AudioState.Jump;
-            canJump = true;
-            if (owner.doubleJumpPowerUpPickedUp)
-            {
-                owner.canDoubleJump = true;
-            }
-            
-            owner.DirectionsPressed.Remove(MovementState.Jump);
-        }
-        else if (owner.DirectionsPressed.Contains(MovementState.Jump) && owner.isJumping && owner.doubleJumpPowerUpPickedUp)
-        {
-            owner.GetParent().GetModule<PlayerAudio>().PlayerAudioState = AudioState.Jump;
-            canDoubleJump = true;
-            owner.DirectionsPressed.Remove(MovementState.Jump);
-        }
-    }
-    */
 }

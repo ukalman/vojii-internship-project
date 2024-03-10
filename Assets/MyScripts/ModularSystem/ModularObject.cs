@@ -151,10 +151,24 @@ public abstract class ModularObject : MonoBehaviour, IModularObject {
 
     public virtual IEnumerator IE_ResetAllModules()
     {
+        for (int i = Modules.Count - 1; i >= 0; i--)
+        {
+            if (Modules[i] != null)
+            {
+                Debug.Log("Resetting module: " + Modules[i].GetName());
+                yield return Modules[i].IE_Restart();
+            }
+        }
+        
+        /*
         foreach (var module in Modules)
         {
-            if (module != null)  yield return module.IE_Restart();
+            if (module != null)
+            {   
+                
+            } 
         }
+        */
     }
 
    

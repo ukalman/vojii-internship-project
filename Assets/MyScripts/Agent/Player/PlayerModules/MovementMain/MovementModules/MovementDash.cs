@@ -4,15 +4,15 @@ using UnityEngine;
 
 public class MovementDash : IMovement
 {
-    //private Rigidbody playerRigidbody;
+    
     private CharacterController playerController;
     private Transform playerTransform;
     private PlayerMovement owner;
 
     private bool isDashing;
     private float dashEndTime;
-    public float dashForce = 20f;
-    public float dashDuration = 0.5f;
+    private float dashCooldown = 2f; // Duration of dash cooldown in seconds
+    private float nextDashTime = 0f; // Time when player is allowed to dash again
 
     public void Initialize(CharacterController playerController, Transform playerTransform, MonoBehaviour owner)
     {
@@ -26,7 +26,7 @@ public class MovementDash : IMovement
 
     public void Tick()
     {
-        if (Input.GetKeyDown(KeyCode.LeftShift) && !isDashing && owner.dashPowerUpPickedUp)
+        if (Input.GetKeyDown(KeyCode.LeftShift) && !isDashing && Time.time >= nextDashTime && owner.dashPowerUpPickedUp)
         {
             StartDash();
         }
@@ -34,7 +34,7 @@ public class MovementDash : IMovement
         if (isDashing && Time.time >= dashEndTime)
         {
             isDashing = false;
-            //playerRigidbody.velocity = Vector3.zero;
+            nextDashTime = Time.time + dashCooldown; // Set the next time the player is allowed to dash
         }
     }
 
@@ -47,9 +47,9 @@ public class MovementDash : IMovement
     {
         owner.GetParent().GetModule<PlayerAudio>().PlayerAudioState = AudioState.Dash;
         Vector3 dashDirection = playerTransform.forward;
-        //playerRigidbody.velocity = dashDirection * dashForce;
+        playerController.Move(dashDirection * owner.dashForce * Time.deltaTime); // Ensure you multiply by Time.deltaTime for frame rate independence
         isDashing = true;
-        dashEndTime = Time.time + dashDuration;
+        dashEndTime = Time.time + owner.dashDuration;
     }
 
     private void DashMovement()
@@ -57,21 +57,9 @@ public class MovementDash : IMovement
         if (isDashing)
         {
             Vector3 dashDirection = playerTransform.forward;
-            //playerRigidbody.velocity = dashDirection * dashForce;
-            isDashing = true;
-            dashEndTime = Time.time + dashDuration;
-
-
-            owner.StartCoroutine(StopDash());
+            playerController.Move(dashDirection * owner.dashForce * Time.deltaTime); // Ensure you multiply by Time.deltaTime for frame rate independence
+            // The `isDashing = true;` and setting `dashEndTime` here seem redundant since they are already set in StartDash(),
+            // Consider removing them from here if they don't serve another purpose
         }
-    }
-
-
-
-    private IEnumerator StopDash()
-    {
-        yield return new WaitForSeconds(dashDuration);
-        //playerRigidbody.velocity = Vector3.zero; // stop player's movement instantly
-        isDashing = false;
     }
 }

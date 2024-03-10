@@ -23,31 +23,27 @@ public class PlayerMovement : AgentModuleBase
     private IMovement wallRunningModule;
     private IMovement jumpModule;
 
+    [Header("Start Properties")] 
     public Vector3 startPosition;
     public Quaternion startRotation;
     public Vector3 startScale;
+    
+    [Header("Player Properties")] 
     public Transform playerTransform;
     //public Rigidbody Rigidbody;
 
     [FormerlySerializedAs("playerController")] public CharacterController playerCharacterController;
     private PlayerCamera _cameraModule;
-    public float turnSmoothTime = 0.1f;
-    private float _turnSmoothVelocity;
 
     public float MovementSpeed;
     public float maxSpeed;
-    public float JumpForce;
-    public float SideJumpForce;
-    public float DoubleJumpForce;
-    public float dashForce;
-    public float dashDuration;
-
-
+    
     public List<MovementState> DirectionsPressed;
     private Vector3 directionVector = Vector3.zero;
 
     
     // Falling with Gravity and Ground
+    [Header("Gravity")] 
     public float gravity = -16.677f;
     public Transform groundCheck;
     public float groundDistance = 0.4f;
@@ -55,20 +51,31 @@ public class PlayerMovement : AgentModuleBase
     public Vector3 verticalVelocity;
     public bool isGrounded;
 
-
+    // Jump
+    [Header("Jump Properties")] 
     public float jumpHeight = 3f;
     public bool isJumping;
     public bool canDoubleJump;
 
-    public bool doubleJumpPowerUpPickedUp;
-    public bool dashPowerUpPickedUp;
-    public bool wallRunPowerUpPickedUp;
-
+    
+    // Dash
+    [Header("Dash Properties")] 
+    public float dashForce = 0.5f;
+    public float dashDuration = 0.5f;
+    
+    // Wall Run
+    [Header("Wall Run Properties")] 
     public bool isWallRunning = false;
     public bool wallLeft = false;
     public bool wallRight = false;
     
+    [Header("PowerUp Properties")] 
+    public bool doubleJumpPowerUpPickedUp;
+    public bool dashPowerUpPickedUp;
+    public bool wallRunPowerUpPickedUp;
 
+
+    [Header("Rope Swing")]
     private GameObject currentRopeSegment; // The segment the player is currently holding onto
     private bool isHoldingRope = false;
     public float swingForce = 2f;
@@ -81,11 +88,12 @@ public class PlayerMovement : AgentModuleBase
         yield return StartCoroutine(base.IE_Initialize());
         this.moduleName = "Player Movement Module";
         _cameraModule = Parent.GetModule<PlayerCamera>();
-        
+
+        startPosition = playerTransform.position;
         Debug.Log("Hello there, Now we're in the Character controller branch.");
 
         //Rigidbody.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
-        DirectionsPressed = new List<MovementState>();
+        //DirectionsPressed = new List<MovementState>();
         maxSpeed = 10f;
 
         isJumping = false;
@@ -118,24 +126,36 @@ public class PlayerMovement : AgentModuleBase
 
     public override IEnumerator IE_Restart()
     {
-        yield return StartCoroutine(base.IE_Restart());
+        Debug.Log("Player Movement Restart is working!");
 
+        // Disable the CharacterController before resetting position and rotation
+        playerCharacterController.enabled = false;
+
+        // Reset player transform to start positions and rotations
         playerTransform.position = startPosition;
         playerTransform.rotation = startRotation;
         playerTransform.localScale = startScale;
+
+        // Reset movement and ability flags
         isJumping = false;
         canDoubleJump = false;
         doubleJumpPowerUpPickedUp = false;
         dashPowerUpPickedUp = false;
         wallRunPowerUpPickedUp = false;
-        DirectionsPressed.Clear();
-        
-        
+    
+        // Reset wall running state
         isWallRunning = false;
         wallLeft = false;
         wallRight = false;
-        //Rigidbody.velocity = Vector3.zero;
 
+        // Reset vertical velocity to ensure no residual falling/movement speeds
+        verticalVelocity = Vector3.zero;
+
+        // Re-enable the CharacterController after the reset
+        playerCharacterController.enabled = true;
+
+        // Optionally wait for the end of the frame to ensure all physics and other updates are processed
+        yield return new WaitForEndOfFrame();
 
     }
 
@@ -147,6 +167,7 @@ public class PlayerMovement : AgentModuleBase
             Move();
             Fall();
             jumpModule.Tick();
+            dashModule.Tick();
 
             return true;
         }
@@ -217,7 +238,8 @@ public class PlayerMovement : AgentModuleBase
         if (base.FixedTick())
         {
             //playerTransform.eulerAngles = new Vector3(0f, _cameraModule.yaw, 0f);
-
+            dashModule.FixedTick();
+            
             return true;
         }
 

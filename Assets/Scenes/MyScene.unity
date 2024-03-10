@@ -788,20 +788,15 @@ MonoBehaviour:
   <Priority>k__BackingField: 100
   moduleName: 
   <State>k__BackingField: 0
-  startPosition: {x: -169.53, y: 0.67, z: -141.85}
+  startPosition: {x: -174.5, y: 0.76, z: -142.95}
   startRotation: {x: 0, y: 0, z: 0, w: 0}
   startScale: {x: 1, y: 1, z: 1}
   playerTransform: {fileID: 2108626375}
   playerCharacterController: {fileID: 2108626390}
   MovementSpeed: 15
   maxSpeed: 15
-  JumpForce: 6
-  SideJumpForce: 15
-  DoubleJumpForce: 6
-  dashForce: 40
-  dashDuration: 0.5
   DirectionsPressed: 
-  gravity: -9.81
+  gravity: -16.677
   groundCheck: {fileID: 883604886}
   groundDistance: 0.4
   groundMask:
@@ -812,12 +807,14 @@ MonoBehaviour:
   jumpHeight: 3
   isJumping: 0
   canDoubleJump: 0
-  doubleJumpPowerUpPickedUp: 1
-  dashPowerUpPickedUp: 1
-  wallRunPowerUpPickedUp: 0
+  dashForce: 1.5
+  dashDuration: 0.15
   isWallRunning: 0
   wallLeft: 0
   wallRight: 0
+  doubleJumpPowerUpPickedUp: 1
+  dashPowerUpPickedUp: 1
+  wallRunPowerUpPickedUp: 0
   swingForce: 10
 --- !u!4 &131242235 stripped
 Transform:
@@ -5463,6 +5460,8 @@ MonoBehaviour:
   currentZoom: 0
   pitch: 0
   yaw: 0
+  fpsCamOn: 0
+  mainCamera: {fileID: 963194227}
   fpsCamera: {fileID: 295031391}
   aimFOV: 45
   normalFOV: 60
@@ -17571,7 +17570,7 @@ CharacterController:
   m_Height: 2
   m_Radius: 0.5
   m_SlopeLimit: 45
-  m_StepOffset: 0.3
+  m_StepOffset: 0.78
   m_SkinWidth: 0.08
   m_MinMoveDistance: 0.001
   m_Center: {x: 0, y: 0, z: 0}
