@@ -67,6 +67,9 @@ public class PlayerCamera : ModuleBase
         yaw = 0f;
 
         fpsCamOn = false;
+        //fpsCamera.transform.position = new Vector3(playerTransform.position.x - 2.096f, playerTransform.position.y - 0.454f, playerTransform.position.z + 4.11f);
+        
+        //fpsCamera.transform.SetPositionAndRotation(new Vector3(playerTransform.position.x - 2.096f, playerTransform.position.y - 0.454f, playerTransform.position.z + 4.11f),fpsCamera.transform.rotation);
         yield return null;
 
     }

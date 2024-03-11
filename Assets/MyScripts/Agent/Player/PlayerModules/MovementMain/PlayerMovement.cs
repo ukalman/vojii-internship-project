@@ -385,8 +385,6 @@ public class PlayerMovement : AgentModuleBase
              direction = transform.right * x_fps + transform.forward * z_fps;
         }
         
-
-        
     }
 
     private void Move()

@@ -39,6 +39,8 @@ public class GameManager : MonoBehaviour
         }
 
         fpsCamera.transform.SetParent(Player.transform);
+        fpsCamera.transform.localPosition = new Vector3(0, 0, 0); // Adjust this to your desired offset
+        fpsCamera.transform.localRotation = Quaternion.identity; // Resets rotation to face forward relative to the player
         //mainCamera.transform.SetParent(Player.transform);
         pistolUI.SetActive(false);
         katanaUI.SetActive(false);
