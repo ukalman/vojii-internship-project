@@ -37,7 +37,8 @@ public class PlayerMovement : AgentModuleBase
     private PlayerCamera _cameraModule;
 
 
-    private Vector3 direction = Vector3.zero;
+    public Vector3 direction = Vector3.zero;
+    public float decelerationSpeed = 5f;
     public float MovementSpeed;
     public float maxSpeed;
     
@@ -369,20 +370,30 @@ public class PlayerMovement : AgentModuleBase
     {
         float x_fps = Input.GetAxis("Horizontal");
         float z_fps = Input.GetAxis("Vertical");
-        
+    
         float horizontal_tps = Input.GetAxisRaw("Horizontal");
         float vertical_tps = Input.GetAxisRaw("Vertical");
 
+        Vector3 targetDirection = Vector3.zero;
 
-        direction = Vector3.zero;
-        
         if (!_cameraModule.fpsCamOn)
         {
-           direction = (transform.right * horizontal_tps + transform.forward * vertical_tps).normalized;
+            targetDirection = (transform.right * horizontal_tps + transform.forward * vertical_tps).normalized;
         }
         else
         {
-             direction = transform.right * x_fps + transform.forward * z_fps;
+            targetDirection = transform.right * x_fps + transform.forward * z_fps;
+        }
+
+        // Check if there is any input to set the target direction
+        if (Mathf.Abs(x_fps) > 0.01f || Mathf.Abs(z_fps) > 0.01f || Mathf.Abs(horizontal_tps) > 0.01f || Mathf.Abs(vertical_tps) > 0.01f)
+        {
+            direction = targetDirection;
+        }
+        else
+        {
+            // Gradually reduce 'direction' to zero if there is no input
+            direction = Vector3.MoveTowards(direction, Vector3.zero, decelerationSpeed * Time.deltaTime);
         }
         
     }
@@ -390,6 +401,7 @@ public class PlayerMovement : AgentModuleBase
     private void Move()
     {
         playerCharacterController.Move(direction * (MovementSpeed * Time.deltaTime));
+        Debug.Log("Current move direction: x: " + direction.x + ", y: " + direction.y + ", z: " + direction.z);
     }
     
     private void ApplyGravity()
@@ -404,8 +416,7 @@ public class PlayerMovement : AgentModuleBase
             verticalVelocity.z = 0f;
             verticalVelocity.y = -2f;
         }
-
-
+        
         verticalVelocity.y += gravity * Time.deltaTime;
 
         playerCharacterController.Move(verticalVelocity * Time.deltaTime);

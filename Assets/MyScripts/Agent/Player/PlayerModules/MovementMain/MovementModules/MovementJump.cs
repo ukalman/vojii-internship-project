@@ -46,16 +46,37 @@ public class MovementJump : IMovement
     {
         if (Input.GetButtonDown("Jump"))
         {
-            if (owner.isGrounded)
+            if (Input.GetButtonDown("Jump"))
             {
-                Debug.Log("Jumping!");
-                owner.verticalVelocity.y = Mathf.Sqrt(owner.jumpHeight * -2f * owner.gravity);
-                owner.canDoubleJump = true; 
-            } else if (owner.canDoubleJump && !owner.isGrounded && owner.doubleJumpPowerUpPickedUp)
-            {
-                Debug.Log("Double Jumping!");
-                owner.verticalVelocity.y = Mathf.Sqrt(owner.jumpHeight * -2f * owner.gravity);
-                owner.canDoubleJump = false;
+                if (owner.isGrounded)
+                {
+                    Debug.Log("Jumping!");
+
+                    // Calculate the jump force for the y-axis
+                    owner.verticalVelocity.y = Mathf.Sqrt(owner.jumpHeight * -2f * owner.gravity);
+            
+                    // Retain the player's current forward momentum when jumping
+                    Vector3 currentMovementDirection = playerController.velocity;
+                    float currentSpeed = playerController.velocity.magnitude;
+                    
+                    Debug.Log("Current movement direction while jumping: x:" + owner.direction.x + ", y: " + owner.direction.z);
+                    Debug.Log("Current movement speed while jumping: " + currentSpeed);
+            
+                    // Apply a portion of the current movement speed to the jump. Adjust the multiplier as needed.
+                    owner.verticalVelocity.x = owner.direction.x * currentSpeed * 2.5f;
+                    owner.verticalVelocity.z = owner.direction.z * currentSpeed * 2.5f;
+
+                    owner.canDoubleJump = true; 
+                } 
+                else if (owner.canDoubleJump && !owner.isGrounded && owner.doubleJumpPowerUpPickedUp)
+                {
+                    Debug.Log("Double Jumping!");
+                    owner.verticalVelocity.y = Mathf.Sqrt(owner.jumpHeight * -2f * owner.gravity);
+                    owner.canDoubleJump = false;
+
+                    // For double jump, consider if you want to reset or maintain horizontal momentum
+                    // This example maintains the current horizontal momentum without adding more
+                }
             }
         }
         
