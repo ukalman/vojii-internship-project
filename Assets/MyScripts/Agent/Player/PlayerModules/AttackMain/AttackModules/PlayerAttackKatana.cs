@@ -17,7 +17,7 @@ public class PlayerAttackKatana : IPlayerAttack
     private float _maxStamina = 100f; 
     
     
-    public void Initialize(Rigidbody playerRigidbody, Transform playerTransform, PlayerAttack owner)
+    public void Initialize(Transform playerTransform, PlayerAttack owner)
     {
 
         _owner = owner;

@@ -4,10 +4,9 @@ using UnityEngine;
 
 public class PlayerAttackBomb : IPlayerAttack
 {
-
-    private Rigidbody playerRigidbody;
+     
     private Transform playerTransform;
-    private PlayerAttack owner;
+    private PlayerAttack _owner;
 
     public float BombThrowForce;
 
@@ -22,11 +21,11 @@ public class PlayerAttackBomb : IPlayerAttack
     private bool isRandomlyExploding;
 
 
-    public void Initialize(Rigidbody playerRigidbody, Transform playerTransform, PlayerAttack owner)
+    public void Initialize(Transform playerTransform, PlayerAttack owner)
     {
-        this.playerRigidbody = playerRigidbody;
+        Debug.Log("Player Attack Bomb's Initialize!");
         this.playerTransform = playerTransform;
-        this.owner = owner;
+        this._owner = owner;
 
         BombThrowForce = 5f;
         BombRigidBodies = new List<Rigidbody>();
@@ -64,7 +63,7 @@ public class PlayerAttackBomb : IPlayerAttack
         }
         else if (isRandomlyExploding)
         {
-            owner.StartCoroutine(ExplodeBombsSequence());
+            _owner.StartCoroutine(ExplodeBombsSequence());
         }
         else
         {
@@ -78,21 +77,32 @@ public class PlayerAttackBomb : IPlayerAttack
 
     public void Equip()
     {
-
+        _owner.bombAnimator.Play("BombEquip",-1, 0f);
     }
 
     public IEnumerator UnEquip()
     {
+
+        if (_owner.bombCount <= 0)
+        {
+            _owner.StartCoroutine(_owner.UnEquip());
+        }
+        else
+        {
+            _owner.bombAnimator.Play("BombUnEquip", -1, 0f);
+            yield return new WaitForSeconds(.3f);
+        }
+        
         yield return null;
     }
-
- 
+    
 
     void CheckBombInstantiation()
     {
-        if (Input.GetMouseButtonDown(2) && owner.bombCount > 0)
+        if (Input.GetMouseButtonDown(2) && _owner.bombCount > 0)
         {
-            InstantiateBomb();
+            Debug.Log("Bomb instantiation initiates");
+            _owner.StartCoroutine(InstantiateBomb());
         }
     }
 
@@ -104,7 +114,7 @@ public class PlayerAttackBomb : IPlayerAttack
             isRandomlyExploding = true;
         }
     }
-
+  
 
     void ExplodeBombs()
     {
@@ -130,15 +140,29 @@ public class PlayerAttackBomb : IPlayerAttack
 
 
 
-    private void InstantiateBomb()
+    private IEnumerator InstantiateBomb()
     {
+        Debug.Log("BOMB INSTANTIATED. " + Time.time);
         GameObject bomb = GameObject.Instantiate(bombPrefab, playerTransform.position + playerTransform.forward * 2f, playerTransform.rotation);
         Bomb bombScript = bomb.GetComponent<Bomb>();
         bombScript.Initialize();
         Bombs.Add(bombScript);
         Rigidbody rb = bomb.GetComponent<Rigidbody>();
         BombRigidBodies.Add(rb);
-        owner.bombCount--;
+        _owner.bombCount--;
+
+        if (_owner.bombCount <= 0)
+        {
+            _owner.StartCoroutine(UnEquip());
+        }
+        else
+        {
+            _owner.bombModel.SetActive(false);
+            yield return new WaitForSeconds(.5f);
+            _owner.bombModel.SetActive(true);
+            _owner.bombAnimator.Play("BombEquip",-1, 0f);
+        }
+        
 
     }
 
@@ -153,7 +177,7 @@ public class PlayerAttackBomb : IPlayerAttack
         foreach (Rigidbody rb in BombRigidBodies)
         {
             ThrowBomb(rb);
-            PlayerAudio playerAudio = owner.GetParent().GetModule<PlayerAudio>();
+            PlayerAudio playerAudio = _owner.GetParent().GetModule<PlayerAudio>();
             if(playerAudio != null) playerAudio.PlayerAudioState = AudioState.ThrowBomb;
 
 
@@ -171,7 +195,7 @@ public class PlayerAttackBomb : IPlayerAttack
         if (explodeBombsRandomly && Bombs.Count > 0)
         {
             explodeBombsRandomly = false;
-            owner.StartCoroutine(ExplodeBombsSequence());
+            _owner.StartCoroutine(ExplodeBombsSequence());
             isRandomlyExploding = false;
 
         }

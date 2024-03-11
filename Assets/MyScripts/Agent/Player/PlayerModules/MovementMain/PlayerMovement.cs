@@ -401,7 +401,6 @@ public class PlayerMovement : AgentModuleBase
     private void Move()
     {
         playerCharacterController.Move(direction * (MovementSpeed * Time.deltaTime));
-        Debug.Log("Current move direction: x: " + direction.x + ", y: " + direction.y + ", z: " + direction.z);
     }
     
     private void ApplyGravity()

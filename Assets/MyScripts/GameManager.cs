@@ -6,22 +6,27 @@ using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
 {
+    
+    [Header("Player")]
+    public GameObject Player;
+    public PlayerAttack playerAttack; // Reference to the PlayerAttack script
+    
+    [Header("Camera")]
     public Camera mainCamera; 
     public Camera fpsCamera; 
 
+    [Header("Controllers")]
     public ModularObject playerController;
     public ModularObject powerupController;
 
-    public PlayerAttack playerAttack; // Reference to the PlayerAttack script
-    public Text ammoText; // Reference to the Text component showing ammo count
-
+    
+    [Header("Weapon UI")]
     public GameObject pistolUI; // Reference to Pistol panel
     public GameObject katanaUI;
+    public GameObject bombUI;
     
     
-    public GameObject Player;
-
-   
+    
     private DateTime timeStamp;
 
     public static GameManager Instance { get; private set; }
@@ -127,6 +132,12 @@ public class GameManager : MonoBehaviour
             katanaUI.SetActive(true);
         }
         else katanaUI.SetActive(false);
+
+        if (attackState == AttackState.Bomb)
+        {
+            bombUI.SetActive(true);
+        }
+        else bombUI.SetActive(false);
 
     }
 

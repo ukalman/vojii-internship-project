@@ -59,9 +59,6 @@ public class MovementJump : IMovement
                     Vector3 currentMovementDirection = playerController.velocity;
                     float currentSpeed = playerController.velocity.magnitude;
                     
-                    Debug.Log("Current movement direction while jumping: x:" + owner.direction.x + ", y: " + owner.direction.z);
-                    Debug.Log("Current movement speed while jumping: " + currentSpeed);
-            
                     // Apply a portion of the current movement speed to the jump. Adjust the multiplier as needed.
                     owner.verticalVelocity.x = owner.direction.x * currentSpeed * 2.5f;
                     owner.verticalVelocity.z = owner.direction.z * currentSpeed * 2.5f;

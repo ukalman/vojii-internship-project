@@ -9,7 +9,7 @@ public class PlayerAttackPistol : IPlayerAttack
     private PlayerAttack _owner;
 
 
-    public void Initialize(Rigidbody playerRigidbody, Transform playerTransform, PlayerAttack owner)
+    public void Initialize(Transform playerTransform, PlayerAttack owner)
     {
         this._owner = owner;
         owner.pistolCrosshair.SetActive(true);

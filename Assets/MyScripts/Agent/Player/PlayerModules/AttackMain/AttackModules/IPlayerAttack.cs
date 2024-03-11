@@ -4,7 +4,7 @@ using UnityEngine;
 
 public interface IPlayerAttack
 {
-    void Initialize(Rigidbody playerRigidbody, Transform playerTransform, PlayerAttack owner);
+    void Initialize(Transform playerTransform, PlayerAttack owner);
     void Tick();
     void FixedTick();
 
