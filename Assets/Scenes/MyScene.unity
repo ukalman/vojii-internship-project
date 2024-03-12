@@ -4554,6 +4554,7 @@ GameObject:
   - component: {fileID: 765771365}
   - component: {fileID: 765771364}
   - component: {fileID: 765771363}
+  - component: {fileID: 765771366}
   m_Layer: 5
   m_Name: TNT Panel
   m_TagString: Untagged
@@ -4568,17 +4569,17 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 765771361}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: -0}
+  m_LocalScale: {x: 2, y: 0.69000006, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 2074208623}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -227.57997, y: -89.799995}
-  m_SizeDelta: {x: 0, y: 0}
+  m_AnchoredPosition: {x: -61.409, y: -89.8}
+  m_SizeDelta: {x: 122.81821, y: 27.818436}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &765771363
 MonoBehaviour:
@@ -4593,6 +4594,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerAttack: {fileID: 443744520}
+  tntIconPrefab: {fileID: 5739007681364236561, guid: 4e9602893d4645641bbcdc7a1d2eb8ed, type: 3}
   tntText: {fileID: 767792517}
 --- !u!114 &765771364
 MonoBehaviour:
@@ -4607,7 +4609,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0.5058824}
+  m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -4632,6 +4634,32 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 765771361}
   m_CullTransparentMesh: 1
+--- !u!114 &765771366
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 765771361}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 30649d3a9faa99c48a7b1166b86bf2a0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Padding:
+    m_Left: 0
+    m_Right: 0
+    m_Top: 0
+    m_Bottom: 0
+  m_ChildAlignment: 0
+  m_Spacing: -19.69
+  m_ChildForceExpandWidth: 0
+  m_ChildForceExpandHeight: 0
+  m_ChildControlWidth: 0
+  m_ChildControlHeight: 1
+  m_ChildScaleWidth: 0
+  m_ChildScaleHeight: 0
+  m_ReverseArrangement: 0
 --- !u!1 &766135256
 GameObject:
   m_ObjectHideFlags: 0
@@ -4772,8 +4800,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 0}
-  m_AnchoredPosition: {x: -102.18425, y: -63.69}
-  m_SizeDelta: {x: 240.4315, y: 80.6151}
+  m_AnchoredPosition: {x: -125.7, y: 20.154}
+  m_SizeDelta: {x: 211.6456, y: 40.308}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &767792517
 MonoBehaviour:
