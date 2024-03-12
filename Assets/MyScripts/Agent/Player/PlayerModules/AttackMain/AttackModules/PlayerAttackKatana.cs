@@ -39,10 +39,11 @@ public class PlayerAttackKatana : IPlayerAttack
         
     }
 
-    public void Equip()
+    public IEnumerator Equip()
     {
         _owner.katanaAnimator.Play("KatanaEquip",-1, 0f);
         _owner.katanaDrawSound.Play();
+        yield return null;
     }
 
     public IEnumerator UnEquip()

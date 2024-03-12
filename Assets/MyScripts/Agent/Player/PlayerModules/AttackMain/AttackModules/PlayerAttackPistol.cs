@@ -66,11 +66,12 @@ public class PlayerAttackPistol : IPlayerAttack
         isShot = false;
     }
 
-    public void Equip()
+    public IEnumerator Equip()
     {
         _owner.pistolCrosshair.SetActive(true);
         _owner.pistolAnimator.Play("PistolEquip",-1, 0f);
         _owner.gunEquipSound.Play();
+        yield return null;
     }
 
     public IEnumerator UnEquip()

@@ -5,8 +5,8 @@ using UnityEngine.UI;
 
 public class AmmoUIManager : MonoBehaviour
 {
-    public GameObject bulletIconPrefab; // Assign this in the inspector with your bullet icon
-    public PlayerAttack playerAttack; // Assign this in the inspector
+    public GameObject bulletIconPrefab; 
+    public PlayerAttack playerAttack; 
 
     [SerializeField] private float fadeDuration = 1.0f; // Duration for the fade effect
     private bool isReloading;
@@ -16,7 +16,7 @@ public class AmmoUIManager : MonoBehaviour
     private GameObject[] bulletIcons;
 
     [SerializeField] private Text ammoText;
-    [SerializeField] private Text reloadingText; // Assign this in the inspector to a Text component
+    [SerializeField] private Text reloadingText; 
 
     void Start()
     {
@@ -31,9 +31,7 @@ public class AmmoUIManager : MonoBehaviour
             bulletIcons[i] = Instantiate(bulletIconPrefab, transform);
             bulletIcons[i].transform.localScale = Vector3.one; // Ensure the icon has the correct scale
         }
-        Debug.Log("first child: " + transform.GetChild(0).name);
 
-        //ammoText = transform.parent.GetChild(0).GetComponent<Text>();
         reloadingText.color = new Color(reloadingText.color.r, reloadingText.color.g, reloadingText.color.b, 0); // Set initial alpha to 0
         UpdateAmmoText(_currentPistolAmmo, playerAttack.totalAmmo);
     }

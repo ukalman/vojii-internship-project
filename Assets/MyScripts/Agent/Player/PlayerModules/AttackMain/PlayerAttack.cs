@@ -228,7 +228,7 @@ public class PlayerAttack : AgentModuleBase
         pistolModel.SetActive(true);
         _pistolEquipped = true;
         _noWeaponEquipped = false;
-        _pistolModule.Equip();
+        StartCoroutine(_pistolModule.Equip());
         WeaponEquippedEvent.BroadcastWeaponEquipment(attackState);
         yield return null;
 
@@ -242,7 +242,7 @@ public class PlayerAttack : AgentModuleBase
         katanaModel.SetActive(true);
         _katanaEquipped = true;
         _noWeaponEquipped = false;
-        _katanaModule.Equip();
+        StartCoroutine(_katanaModule.Equip());
         WeaponEquippedEvent.BroadcastWeaponEquipment(attackState);
         yield return null;
     }
@@ -258,7 +258,7 @@ public class PlayerAttack : AgentModuleBase
             bombModel.SetActive(true);
             _bombEquipped = true;
             _noWeaponEquipped = false;
-            _bombModule.Equip();
+            StartCoroutine(_bombModule.Equip());
             WeaponEquippedEvent.BroadcastWeaponEquipment(attackState);
             yield return null;
 

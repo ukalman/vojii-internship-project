@@ -8,7 +8,7 @@ public interface IPlayerAttack
     void Tick();
     void FixedTick();
 
-    void Equip();
+    IEnumerator Equip();
 
     IEnumerator UnEquip();
 

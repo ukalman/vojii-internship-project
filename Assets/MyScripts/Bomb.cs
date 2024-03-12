@@ -34,6 +34,7 @@ public class Bomb : MonoBehaviour
 
         StartCoroutine(SetActivated());
         explosionInstance = Instantiate(ExplosionEffect, transform.position, transform.rotation);
+        explosionInstance.transform.SetParent(transform);
 
     }
 

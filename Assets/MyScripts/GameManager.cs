@@ -49,6 +49,7 @@ public class GameManager : MonoBehaviour
         //mainCamera.transform.SetParent(Player.transform);
         pistolUI.SetActive(false);
         katanaUI.SetActive(false);
+        bombUI.SetActive(false);
     }
 
 
