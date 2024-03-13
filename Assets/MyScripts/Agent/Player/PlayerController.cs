@@ -7,6 +7,11 @@ using System.Linq;
 public class PlayerController : AgentControlBase
 {
 
+    private bool collidedWithBombCollectible = false;
+    private bool collidedWithKatanaCollectible = false;
+    private bool collidedWithPistolCollectible = false;
+
+    /*
     private void OnCollisionEnter(Collision collision)
     {
         if (Modules.Any(module => module is PlayerMovement))
@@ -18,6 +23,7 @@ public class PlayerController : AgentControlBase
             }
         }
     }
+    */
 
     /*
     private void OnCollisionExit(Collision collision)
@@ -34,21 +40,31 @@ public class PlayerController : AgentControlBase
     */
 
 
-    /*
+    
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Rope"))
+        PlayerAttack PlayerAttackModule = GetModule<PlayerAttack>();
+        Debug.Log("On Trigger enter, " + other.tag);
+        
+        if (other.CompareTag("PistolCollectible"))
         {
-            Debug.Log("Trigger with Rope.");
-            var playerMovementModule = GetModule<PlayerMovement>();
-            if (playerMovementModule != null)
-            {
-                playerMovementModule.GetReadyToGrabRope(other);
-            }
-           
+            Destroy(other.transform.parent.parent.gameObject);
+            PlayerAttackModule.CollectPistol();
+            
+        } else if (other.CompareTag("BombCollectible") && PlayerAttackModule.bombCount < 5)
+        {
+            Destroy(other.transform.parent.parent.gameObject);
+            PlayerAttackModule.CollectBomb();
+            
+        } else if (other.CompareTag("KatanaCollectible"))
+        {
+            Destroy(other.transform.parent.parent.parent.gameObject);
+            PlayerAttackModule.CollectKatana();
+            
         }
     }
 
+    /*
     private void OnTriggerExit(Collider other)
     {
         Debug.Log("Trigger with Rope.");

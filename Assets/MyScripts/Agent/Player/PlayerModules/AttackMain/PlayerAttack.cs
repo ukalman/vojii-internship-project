@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UIElements;
 
 public enum AttackState
@@ -18,14 +19,17 @@ public class PlayerAttack : AgentModuleBase
     // Bomb   
     private IPlayerAttack _bombModule;
     [Header("Bomb Properties")]
+    public bool bombCollected = false;
     public GameObject bombPrefab;
     public GameObject bombModel;
     public Animator bombAnimator;
-    public int bombCount = 4; // make this private later
-
+    public int bombCount = 0; // make this private later
+    [FormerlySerializedAs("Bombs")] public List<Bomb> PlantedBombs;
+    
     // Pistol (Glock)
     private IPlayerAttack _pistolModule;
     [Header("Pistol Properties")]
+    public bool pistolCollected = false;
     public GameObject pistolModel;
     public GameObject pistolCrosshair;
     public Animator pistolAnimator;
@@ -46,6 +50,7 @@ public class PlayerAttack : AgentModuleBase
     // Katana
     private IPlayerAttack _katanaModule;
     [Header("Katana Properties")] 
+    public bool katanaCollected = false;
     public GameObject katanaModel;
     public Animator katanaAnimator;
     public KatanaStaminaBar staminaBar;
@@ -115,11 +120,11 @@ public class PlayerAttack : AgentModuleBase
 
             StartCoroutine(CheckWeaponReload());
             
-            if(_pistolEquipped) _pistolModule.Tick();
+            if(_pistolEquipped && pistolCollected) _pistolModule.Tick();
             
-            else if(_katanaEquipped) _katanaModule.Tick();
+            else if(_katanaEquipped && katanaCollected) _katanaModule.Tick();
             
-            else if(_bombEquipped) _bombModule.Tick();
+            else if(_bombEquipped && bombCollected) _bombModule.Tick();
 
             return true;
         }
@@ -132,12 +137,11 @@ public class PlayerAttack : AgentModuleBase
     {
         if (base.FixedTick())
         { 
-            _bombModule.FixedTick();
-            if(_pistolEquipped) _pistolModule.FixedTick();
+            if(_pistolEquipped && pistolCollected) _pistolModule.FixedTick();
             
-            else if(_katanaEquipped) _katanaModule.FixedTick();
+            else if(_katanaEquipped && katanaCollected) _katanaModule.FixedTick();
             
-            else if(_bombEquipped) _bombModule.FixedTick();
+            else if(_bombEquipped && bombCollected) _bombModule.FixedTick();
             return true;
         }
 
@@ -157,7 +161,7 @@ public class PlayerAttack : AgentModuleBase
         if (Input.GetKeyDown(KeyCode.Alpha1))
         {
           
-            if (!_pistolEquipped)
+            if (!_pistolEquipped && pistolCollected)
             {
                 StartCoroutine(EquipPistol());
             }
@@ -166,7 +170,7 @@ public class PlayerAttack : AgentModuleBase
         if (Input.GetKeyDown(KeyCode.Alpha2))
         {
           
-            if (!_katanaEquipped)
+            if (!_katanaEquipped && katanaCollected)
             {
                 StartCoroutine(EquipKatana());
             }
@@ -175,7 +179,7 @@ public class PlayerAttack : AgentModuleBase
         if (Input.GetKeyDown(KeyCode.Alpha3))
         {
             Debug.Log("Alpha3 is Pressed!");
-            if (!_bombEquipped && bombCount > 0)
+            if (!_bombEquipped && bombCollected && bombCount > 0)
             {
                 StartCoroutine(EquipBomb());
             }
@@ -222,6 +226,7 @@ public class PlayerAttack : AgentModuleBase
 
     public IEnumerator EquipPistol()
     {
+        Debug.Log("Pistul Equip!!!");
         if (!_noWeaponEquipped) yield return StartCoroutine(UnEquip());
        
         attackState = AttackState.Pistol;
@@ -269,6 +274,7 @@ public class PlayerAttack : AgentModuleBase
 
     public IEnumerator UnEquip()
     {
+        Debug.Log("Pistol UnEquip is ");
         if (_pistolEquipped)
         {
             yield return StartCoroutine(_pistolModule.UnEquip());
@@ -300,6 +306,20 @@ public class PlayerAttack : AgentModuleBase
         
         else if (_bombEquipped)
         {
+            
+            yield return StartCoroutine(_bombModule.UnEquip());
+            //yield return new WaitForSeconds(1f);
+            
+            bombModel.SetActive(false);
+            //katanaModel.transform.localPosition = new Vector3(0.002990723f, -0.39324f, 0.8000031f);
+            _bombEquipped = false;
+            _noWeaponEquipped = true;
+            attackState = AttackState.Idle;
+            WeaponEquippedEvent.BroadcastWeaponEquipment(attackState);
+            yield return new WaitForSeconds(.2f);
+            
+            /*
+            
             if (bombCount > 0)
             {
                 yield return StartCoroutine(_bombModule.UnEquip());
@@ -319,13 +339,61 @@ public class PlayerAttack : AgentModuleBase
                 //katanaModel.transform.localPosition = new Vector3(0.002990723f, -0.39324f, 0.8000031f);
                 _bombEquipped = false;
                 _noWeaponEquipped = true;
+                bombCollected = false;
                 attackState = AttackState.Idle;
                 WeaponEquippedEvent.BroadcastWeaponEquipment(attackState);
                 yield return new WaitForSeconds(.2f);
             }
+            */
             
         }
     }
+
+    public IEnumerator BombsRanOut()
+    {
+        bombModel.SetActive(false);
+        //katanaModel.transform.localPosition = new Vector3(0.002990723f, -0.39324f, 0.8000031f);
+        _bombEquipped = false;
+        _noWeaponEquipped = true;
+        bombCollected = false;
+        attackState = AttackState.Idle;
+        WeaponEquippedEvent.BroadcastWeaponEquipment(attackState);
+        yield return new WaitForSeconds(.2f);
+    }
+    
+    
+
+    public void CollectPistol()
+    {
+        pistolCollected = true;
+        StartCoroutine(EquipPistol());
+
+    }
+
+    public void CollectBomb()
+    {
+        Debug.Log("Collect bomb!");
+        bombCount++;
+        if (!bombCollected)
+        {
+            bombCollected = true;
+            StartCoroutine(EquipBomb());
+        }
+
+        else if (bombCollected && bombCount <= 0)
+        {
+            StartCoroutine(EquipBomb());
+        }
+        
+
+    }
+
+    public void CollectKatana()
+    {
+        katanaCollected = true;
+        StartCoroutine(EquipKatana());
+    }
+    
 
     void HandleWeaponAim(AttackState attackState)
     {
@@ -360,6 +428,8 @@ public class PlayerAttack : AgentModuleBase
         }
 
     }
+    
+    
 
     
 }

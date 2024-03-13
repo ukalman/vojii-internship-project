@@ -10,11 +10,11 @@ public class PlayerAttackBomb : IPlayerAttack
 
     public float BombThrowForce;
 
-    public GameObject bombPrefab;
-    public List<Rigidbody> BombRigidBodies;
-    public List<Bomb> Bombs;
+    private GameObject bombPrefab;
+    private List<Rigidbody> BombRigidBodies;
+    //private List<Bomb> Bombs;
 
-    public List<Bomb> CopyBombs;
+    private List<Bomb> CopyBombs;
 
 
     private bool explodeBombsRandomly;
@@ -31,7 +31,7 @@ public class PlayerAttackBomb : IPlayerAttack
 
         BombThrowForce = 5f;
         BombRigidBodies = new List<Rigidbody>();
-        Bombs = new List<Bomb>();
+        _owner.PlantedBombs = new List<Bomb>();
 
         bombPrefab = owner.bombPrefab;
         explodeBombsRandomly = false;
@@ -45,7 +45,7 @@ public class PlayerAttackBomb : IPlayerAttack
         
         CheckBombInstantiation();
 
-        foreach (Bomb bomb in Bombs)
+        foreach (Bomb bomb in _owner.PlantedBombs)
         {
             if (bomb != null)
             {
@@ -72,7 +72,7 @@ public class PlayerAttackBomb : IPlayerAttack
         }
         else
         {
-            ExplodeBombs();
+            _owner.StartCoroutine(ExplodeBombs());
         }
 
 
@@ -91,15 +91,12 @@ public class PlayerAttackBomb : IPlayerAttack
     {
         isReadyToThrow = false;
 
-        if (_owner.bombCount <= 0)
-        {
-            _owner.StartCoroutine(_owner.UnEquip());
-        }
-        else
-        {
-            _owner.bombAnimator.Play("BombUnEquip", -1, 0f);
-            yield return new WaitForSeconds(.3f);
-        }
+        
+       
+        _owner.bombAnimator.Play("BombUnEquip", -1, 0f);
+        yield return new WaitForSeconds(.3f);
+        
+        
         
         yield return null;
     }
@@ -124,23 +121,34 @@ public class PlayerAttackBomb : IPlayerAttack
     }
   
 
-    void ExplodeBombs()
+    IEnumerator ExplodeBombs()
     {
-        CopyBombs = new List<Bomb>(Bombs);
-        for (int i = 0; i < Bombs.Count; i++)
+        CopyBombs = new List<Bomb>(_owner.PlantedBombs);
+        for (int i = 0; i < _owner.PlantedBombs.Count; i++)
         {
-            if (Bombs[i] != null)
+            if (_owner.PlantedBombs[i] != null)
             {
-                bool isExploded = Bombs[i].FixedTick();
+                bool isExploded = _owner.PlantedBombs[i].FixedTick();
                 if (isExploded)
                 {
 
-                    CopyBombs.Remove(Bombs[i]);
+                    CopyBombs.Remove(_owner.PlantedBombs[i]);
                 }
             }
         }
 
-        Bombs = new List<Bomb>(CopyBombs);
+        // _owner.Bombs = new List<Bomb>(CopyBombs); Instead of doing this, do the thing below. Still referencing to same set of Bomb objects.
+
+        _owner.PlantedBombs.Clear();
+        _owner.PlantedBombs.AddRange(CopyBombs);
+
+        if (_owner.PlantedBombs.Count <= 0 && _owner.bombCount <= 0)
+        {
+            yield return _owner.StartCoroutine(_owner.BombsRanOut());
+        }
+
+        yield return null;
+
     }
 
 
@@ -157,16 +165,18 @@ public class PlayerAttackBomb : IPlayerAttack
             GameObject bomb = GameObject.Instantiate(bombPrefab, playerTransform.position + playerTransform.forward * 2f, playerTransform.rotation);
             Bomb bombScript = bomb.GetComponent<Bomb>();
             bombScript.Initialize();
-            Bombs.Add(bombScript);
+            _owner.PlantedBombs.Add(bombScript);
             Rigidbody rb = bomb.GetComponent<Rigidbody>();
             BombRigidBodies.Add(rb);
             _owner.bombCount--;
         
-
-            if (Bombs.Count <= 0)
+            
+            /*
+            if (_owner.Bombs.Count <= 0)
             {
                 _owner.StartCoroutine(UnEquip());
             }
+            */
 
             if (_owner.bombCount > 0)
             {
@@ -207,13 +217,7 @@ public class PlayerAttackBomb : IPlayerAttack
         } 
     
         BombRigidBodies.Clear();  
-    
         
-        
-        
-
-        
-
         
     }
 
@@ -223,7 +227,7 @@ public class PlayerAttackBomb : IPlayerAttack
 
     void ExplodeBombsRandomly()
     {
-        if (explodeBombsRandomly && Bombs.Count > 0)
+        if (explodeBombsRandomly && _owner.PlantedBombs.Count > 0)
         {
             explodeBombsRandomly = false;
             _owner.StartCoroutine(ExplodeBombsSequence());
@@ -234,9 +238,9 @@ public class PlayerAttackBomb : IPlayerAttack
 
     IEnumerator ExplodeBombsSequence()
     {
-        CopyBombs = new List<Bomb>(Bombs)
+        CopyBombs = new List<Bomb>(_owner.PlantedBombs)
 ;
-        foreach (Bomb bomb in Bombs)
+        foreach (Bomb bomb in _owner.PlantedBombs)
         {
             if (!bomb.isActivated)
             {
@@ -257,7 +261,7 @@ public class PlayerAttackBomb : IPlayerAttack
             {
                 CopyBombs[randomIndex].hasDetonated = true;
                 CopyBombs[randomIndex].Explode();
-                Bombs.Remove(CopyBombs[randomIndex]);
+                _owner.PlantedBombs.Remove(CopyBombs[randomIndex]);
                 CopyBombs.RemoveAt(randomIndex);
                
             }

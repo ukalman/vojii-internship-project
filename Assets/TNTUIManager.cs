@@ -13,20 +13,21 @@ public class TNTUIManager : MonoBehaviour
     
     private GameObject[] tntIcons;
     
-    private int _currentBombCount = 0;
+    [SerializeField] private int _currentBombCount = 0;
     
     // Start is called before the first frame update
     void Start()
     {
         _currentBombCount = playerAttack.bombCount;
         
-        tntIcons = new GameObject[_currentBombCount];
+        tntIcons = new GameObject[5];
 
-        // Instantiate bullet icons
-        for (int i = 0; i < _currentBombCount; i++)
+        // Maximum 5 TNTs
+        for (int i = 0; i < 5; i++)
         {
             tntIcons[i] = Instantiate(tntIconPrefab, transform);
             tntIcons[i].transform.localScale = Vector3.one; // Ensure the icon has the correct scale
+            tntIcons[i].SetActive(i < _currentBombCount);
         }
         
         UpdateTNTText();

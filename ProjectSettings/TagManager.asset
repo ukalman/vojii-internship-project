@@ -14,6 +14,9 @@ TagManager:
   - Rope
   - RopeSegment
   - BombWithoutLogic
+  - PistolCollectible
+  - KatanaCollectible
+  - BombCollectible
   layers:
   - Default
   - TransparentFX
